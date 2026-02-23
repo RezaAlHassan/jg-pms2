@@ -18,23 +18,23 @@ const Dashboard: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Load requests, budgets, and current user data in parallel
       const [requestsData, budgetsData, usersData] = await Promise.all([
         purchaseRequestService.getAll(),
         budgetService.getAll(),
         userService.getAll()
       ]);
-      
+
       setRequests(requestsData);
       setBudgets(budgetsData);
-      
+
       // For testing purposes, use the first user as current user
       // In a real app, this would come from authentication context
       const testUser = usersData[0];
       if (testUser) {
         setCurrentUser(testUser);
-        
+
         // Load user's department
         if (testUser.department_id) {
           const department = await departmentService.getById(testUser.department_id);
@@ -83,11 +83,9 @@ const Dashboard: React.FC = () => {
   // Calculate statistics
   const myRequests = requests.filter(req => req.requester_id === (currentUser?.user_id || 1));
   const pendingRequests = requests.filter(req => req.status === 'Pending');
-  const approvedRequests = requests.filter(req => req.status === 'Approved');
-  const totalSpent = approvedRequests.reduce((sum, req) => sum + req.amount, 0);
   const totalBudget = budgets.reduce((sum, budget) => sum + budget.total_amount, 0);
   const remainingBudget = budgets.reduce((sum, budget) => sum + budget.remaining_amount, 0);
-  
+
   // Recent requests (last 5)
   const recentRequests = requests
     .sort((a, b) => new Date(b.request_date || '').getTime() - new Date(a.request_date || '').getTime())

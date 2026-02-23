@@ -1,6 +1,6 @@
 import React from 'react';
-import { purchaseRequestService, departmentService, budgetService, userService } from '../lib/database';
-import type { PurchaseRequest, Department, Budget, Supplier, User } from '../lib/supabase';
+import { purchaseRequestService, departmentService } from '../lib/database';
+import type { PurchaseRequestWithDetails, Department, Supplier } from '../lib/supabase';
 
 interface PurchaseRequestViewProps {
   requestId: number | null;
@@ -8,10 +8,8 @@ interface PurchaseRequestViewProps {
   onClose: () => void;
 }
 
-interface RequestDetails extends PurchaseRequest {
-  requester?: User;
+interface RequestDetails extends PurchaseRequestWithDetails {
   department?: Department;
-  budget?: Budget;
   supplier?: Supplier;
 }
 
@@ -33,25 +31,21 @@ const PurchaseRequestView: React.FC<PurchaseRequestViewProps> = ({ requestId, is
       setLoading(true);
       setError(null);
 
-      // Load the main request data
+      // Load the main request data which includes requester and budget
       const request = await purchaseRequestService.getById(requestId);
       if (!request) {
         setError('Request not found');
         return;
       }
 
-      // Load related data in parallel
-      const [department, supplier] = await Promise.all([
-        request.budget?.department_id ? departmentService.getById(request.budget.department_id) : null,
-        null // We don't have supplier_id in the current schema, but keeping for future use
-      ]);
+      // Load department if needed
+      const department = request.budget?.department_id
+        ? await departmentService.getById(request.budget.department_id)
+        : null;
 
       setRequestDetails({
         ...request,
-        requester: request.requester || undefined,
-        department: department || undefined,
-        budget: request.budget || undefined,
-        supplier: supplier || undefined
+        department: department || undefined
       });
     } catch (err) {
       console.error('Error loading request details:', err);
@@ -104,11 +98,11 @@ const PurchaseRequestView: React.FC<PurchaseRequestViewProps> = ({ requestId, is
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex min-h-screen items-center justify-center p-4">
         {/* Backdrop */}
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
           onClick={onClose}
         />
-        
+
         {/* Modal */}
         <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
           {/* Header */}
@@ -218,7 +212,7 @@ const PurchaseRequestView: React.FC<PurchaseRequestViewProps> = ({ requestId, is
                         Name
                       </label>
                       <p className="text-gray-900 dark:text-white">
-                        {requestDetails.requester 
+                        {requestDetails.requester
                           ? `${requestDetails.requester.first_name} ${requestDetails.requester.last_name}`
                           : `User #${requestDetails.requester_id}`
                         }

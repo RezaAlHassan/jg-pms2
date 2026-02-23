@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { purchaseRequestService } from '../lib/database';
 import PurchaseRequestView from '../components/PurchaseRequestView';
-import type { PurchaseRequest } from '../lib/supabase';
+import type { PurchaseRequestWithDetails } from '../lib/supabase';
 
 const Approvals: React.FC = () => {
-  const [requests, setRequests] = useState<PurchaseRequest[]>([]);
+  const [requests, setRequests] = useState<PurchaseRequestWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedRequestId, setSelectedRequestId] = useState<number | null>(null);
@@ -18,10 +18,10 @@ const Approvals: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const allRequests = await purchaseRequestService.getAll();
       const pendingRequests = allRequests.filter(req => req.status === 'Pending');
-      
+
       setRequests(pendingRequests);
     } catch (err) {
       console.error('Error loading pending requests:', err);
@@ -73,7 +73,6 @@ const Approvals: React.FC = () => {
     return new Date(dateString).toLocaleDateString();
   };
 
-  const approvedRequests = requests.filter(req => req.status === 'Approved');
   const pendingCount = requests.length;
 
   if (loading) {
@@ -217,7 +216,7 @@ const Approvals: React.FC = () => {
                       </span>
                     </div>
                     <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                      Requested by: {request.requester 
+                      Requested by: {request.requester
                         ? `${request.requester.first_name} ${request.requester.last_name}`
                         : `User #${request.requester_id}`
                       } • Amount: {formatCurrency(request.amount)}
@@ -230,19 +229,19 @@ const Approvals: React.FC = () => {
                     </p>
                   </div>
                   <div className="flex space-x-2">
-                    <button 
+                    <button
                       onClick={() => handleApprove(request.request_id)}
                       className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
                     >
                       Approve
                     </button>
-                    <button 
+                    <button
                       onClick={() => handleReject(request.request_id)}
                       className="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
                     >
                       Reject
                     </button>
-                    <button 
+                    <button
                       onClick={() => handleViewRequest(request.request_id)}
                       className="bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
                     >

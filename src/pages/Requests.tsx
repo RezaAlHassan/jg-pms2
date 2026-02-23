@@ -1,20 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { purchaseRequestService } from '../lib/database';
-import { departmentService } from '../lib/database';
+import { purchaseRequestService, departmentService } from '../lib/database';
 import PurchaseRequestView from '../components/PurchaseRequestView';
-import type { PurchaseRequest } from '../lib/supabase';
+import type { PurchaseRequestWithDetails } from '../lib/supabase';
 
 const Requests: React.FC = () => {
-  const [requests, setRequests] = useState<PurchaseRequest[]>([]);
+  const [requests, setRequests] = useState<PurchaseRequestWithDetails[]>([]);
   const [departments, setDepartments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // Filter states
   const [statusFilter, setStatusFilter] = useState<string>('All Status');
   const [departmentFilter, setDepartmentFilter] = useState<string>('All Departments');
   const [dateFilter, setDateFilter] = useState<string>('');
-  
+
   // View overlay states
   const [selectedRequestId, setSelectedRequestId] = useState<number | null>(null);
   const [isViewOpen, setIsViewOpen] = useState(false);
@@ -27,13 +26,13 @@ const Requests: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Load requests and departments in parallel
       const [requestsData, departmentsData] = await Promise.all([
         purchaseRequestService.getAll(),
         departmentService.getAll()
       ]);
-      
+
       setRequests(requestsData);
       setDepartments(departmentsData);
     } catch (err) {
@@ -77,10 +76,10 @@ const Requests: React.FC = () => {
 
   const filteredRequests = requests.filter(request => {
     const matchesStatus = statusFilter === 'All Status' || request.status === statusFilter;
-    const matchesDepartment = departmentFilter === 'All Departments' || 
+    const matchesDepartment = departmentFilter === 'All Departments' ||
       (request.budget_id && departments.find(dept => dept.department_id === request.budget_id)?.department_name === departmentFilter);
     const matchesDate = !dateFilter || (request.request_date && new Date(request.request_date).toDateString() === new Date(dateFilter).toDateString());
-    
+
     return matchesStatus && matchesDepartment && matchesDate;
   });
 
@@ -187,7 +186,7 @@ const Requests: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Status
             </label>
-            <select 
+            <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
@@ -205,7 +204,7 @@ const Requests: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Department
             </label>
-            <select 
+            <select
               value={departmentFilter}
               onChange={(e) => setDepartmentFilter(e.target.value)}
               className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
@@ -230,7 +229,7 @@ const Requests: React.FC = () => {
             />
           </div>
           <div className="flex items-end">
-            <button 
+            <button
               onClick={() => {
                 setStatusFilter('All Status');
                 setDepartmentFilter('All Departments');
@@ -260,8 +259,8 @@ const Requests: React.FC = () => {
                 </svg>
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">No requests found</h3>
                 <p className="text-gray-500 dark:text-gray-400">
-                  {requests.length === 0 
-                    ? "No purchase requests have been created yet." 
+                  {requests.length === 0
+                    ? "No purchase requests have been created yet."
                     : "No requests match your current filters."}
                 </p>
               </div>
@@ -305,7 +304,7 @@ const Requests: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      {request.requester 
+                      {request.requester
                         ? `${request.requester.first_name} ${request.requester.last_name}`
                         : `User #${request.requester_id}`
                       }
@@ -322,7 +321,7 @@ const Requests: React.FC = () => {
                       {formatDate(request.request_date)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button 
+                      <button
                         onClick={() => handleViewRequest(request.request_id)}
                         className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-4"
                       >

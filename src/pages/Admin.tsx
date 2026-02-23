@@ -13,10 +13,6 @@ const Admin: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
 
   // Form states
-  const [showCreateDepartment, setShowCreateDepartment] = useState(false);
-  const [showCreateBudget, setShowCreateBudget] = useState(false);
-  const [showAssignUser, setShowAssignUser] = useState(false);
-  const [selectedDepartment, setSelectedDepartment] = useState<Department | null>(null);
 
   const tabs = [
     { id: 'departments', label: 'Departments' },
@@ -32,13 +28,13 @@ const Admin: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const [departmentsData, budgetsData, usersData] = await Promise.all([
         departmentService.getAll(),
         budgetService.getAll(),
         userService.getAll()
       ]);
-      
+
       setDepartments(departmentsData);
       setBudgets(budgetsData);
       setUsers(usersData);
@@ -67,11 +63,10 @@ const Admin: React.FC = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === tab.id
+                className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === tab.id
                     ? 'border-blue-500 text-blue-600 dark:text-blue-400'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
-                }`}
+                  }`}
               >
                 {tab.label}
               </button>
@@ -89,7 +84,7 @@ const Admin: React.FC = () => {
           ) : error ? (
             <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
               <p className="text-red-800 dark:text-red-200">{error}</p>
-              <button 
+              <button
                 onClick={loadData}
                 className="mt-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
               >
@@ -102,7 +97,7 @@ const Admin: React.FC = () => {
                 <div className="space-y-6">
                   <div className="flex justify-between items-center">
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Department Management</h2>
-                    <button 
+                    <button
                       onClick={() => {
                         window.location.href = '/admin/departments/create';
                       }}
@@ -111,14 +106,14 @@ const Admin: React.FC = () => {
                       Create Department
                     </button>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {departments.map((dept) => {
                       const deptUsers = users.filter(user => user.department_id === dept.department_id);
                       const deptBudgets = budgets.filter(budget => budget.department_id === dept.department_id);
                       const totalBudget = deptBudgets.reduce((sum, budget) => sum + budget.total_amount, 0);
                       const remainingBudget = deptBudgets.reduce((sum, budget) => sum + budget.remaining_amount, 0);
-                      
+
                       return (
                         <div key={dept.department_id} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
                           <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{dept.department_name}</h3>
@@ -137,7 +132,7 @@ const Admin: React.FC = () => {
                             </p>
                           </div>
                           <div className="mt-4 flex space-x-2">
-                            <button 
+                            <button
                               onClick={() => {
                                 // Navigate to department details page
                                 window.location.href = `/admin/departments/${dept.department_id}`;
@@ -163,7 +158,7 @@ const Admin: React.FC = () => {
                       Add User
                     </button>
                   </div>
-                  
+
                   <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                     <div className="overflow-x-auto">
                       <table className="w-full">
@@ -201,11 +196,10 @@ const Admin: React.FC = () => {
                                   {dept?.department_name || 'Unassigned'}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                  <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${
-                                    user.is_active 
+                                  <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${user.is_active
                                       ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
                                       : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-                                  }`}>
+                                    }`}>
                                     {user.is_active ? 'Active' : 'Inactive'}
                                   </span>
                                 </td>

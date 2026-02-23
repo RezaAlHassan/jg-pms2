@@ -1,16 +1,12 @@
 import { createClient } from '@supabase/supabase-js';
 
 // Get environment variables
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder';
 
-// Validate environment variables
-if (!supabaseUrl) {
-  throw new Error('Missing VITE_SUPABASE_URL environment variable');
-}
-
-if (!supabaseAnonKey) {
-  throw new Error('Missing VITE_SUPABASE_ANON_KEY environment variable');
+// Log warning if environment variables are missing
+if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+  console.warn('Supabase environment variables are missing. The application will run in frontend-only mode.');
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
@@ -94,12 +90,17 @@ export interface PurchaseRequest {
   amount: number;
   status: 'Pending' | 'Approved' | 'Rejected' | 'Cancelled' | 'In Progress' | 'Completed';
   funding_source?: string;
-  budget_id: number; // Made mandatory
-  department_id: number; // Made mandatory
+  budget_id: number;
+  department_id: number;
   description?: string;
   justification?: string;
   created_at?: string;
   updated_at?: string;
+}
+
+export interface PurchaseRequestWithDetails extends PurchaseRequest {
+  requester?: Pick<User, 'first_name' | 'last_name' | 'email'>;
+  budget?: Pick<Budget, 'department_id' | 'fiscal_year' | 'remaining_amount' | 'total_amount'>;
 }
 
 export interface Catalog {
